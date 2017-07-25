@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ServerNodejs</string>
+    <string name="btnWrite">write</string>
+    <string name="btnSave">Save</string>
+</resources>
