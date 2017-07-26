@@ -44,12 +44,13 @@ public class WriteActivity extends AppCompatActivity {
                     editContent.getText().toString()
             );
             setResult(RESULT_OK);
+            finish();
         });
 
         btnCancel.setOnClickListener(v -> {
-            setResult(RESULT_CANCEL);
+            setResult(RESULT_CANCEL); // 값을 intent에 담아주기만 한다.
+            // finish를 해야 onActivityResult를 호출할 수 있다.
             finish();
-
         });
     }
 

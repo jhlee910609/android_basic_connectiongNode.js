@@ -56,26 +56,26 @@ public class MainActivity extends AppCompatActivity {
              * 호출 시, startActivity로 호출하지 말고... 다른 방법으로
              */
         });
-
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQ_CODE){
-            switch (resultCode){
-                case WriteActivity.RESULT_CANCEL :
+        if (requestCode == REQ_CODE) {
+            switch (resultCode) {
+                case WriteActivity.RESULT_CANCEL:
+                    recyclerView.postInvalidate();
                     break;
 
-                case WriteActivity.RESULT_OK :
+                case WriteActivity.RESULT_OK:
                     loader();
-                    adapter.notifyItemInserted(bbsList.size()+1);
                     break;
             }
         }
     }
 
     private void loader() {
+        Log.e("main", "loader");
 
         /* 1. 레트로핏 생성 */
         // 1.1. 서버 생성
@@ -112,16 +112,15 @@ public class MainActivity extends AppCompatActivity {
                             Log.e("MainActivity", "data :::: " + data.length);
 
                             this.bbsList.clear();
-                            for(Bbs bbs : data) {
+                            for (Bbs bbs : data) {
                                 this.bbsList.add(bbs);
                             }
 
                             // 3. 아답터 갱신
                             adapter.notifyDataSetChanged();
+//                          adapter.notifyItemInserted(bbsList.size()+1);
 
 
                         });
     }
-
-
 }
