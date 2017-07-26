@@ -28,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerAdapter adapter;
     public List<Bbs> bbsList;
     public static final int REQ_CODE = 12345;
+    private Retrofit client = null;
+    private IBbs myServer = null;
+    private int exId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +38,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         bbsList = new ArrayList<>();
         initView();
+        Log.e("Main", "onCreate exid :: " + this.exId);
+
         setAdatper();
-        loader();
+        setRetrofit();
+        loadAll();
+    }
+
+    private void setExId(String id){
+        this.exId = Integer.parseInt(id);
     }
 
     private void setAdatper() {
@@ -48,12 +58,11 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         btnWrite = (Button) findViewById(R.id.btnWrite);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-
         btnWrite.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, WriteActivity.class);
             startActivityForResult(intent, REQ_CODE);
             /**
-             * 호출 시, startActivity로 호출하지 말고... 다른 방법으로
+             * 호출 시, startActivity로 호출하지 말고... 다른 방법으로 작성하기
              */
         });
     }
@@ -68,30 +77,32 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case WriteActivity.RESULT_OK:
-                    loader();
+                    setExId(bbsList.get(0).getId());
+                    Log.e("Main", "onActivityResult exId :: " + this.exId);
+                    getLastItem();
                     break;
             }
         }
     }
 
-    private void loader() {
-        Log.e("main", "loader");
-
-        /* 1. 레트로핏 생성 */
+    private void setRetrofit() {
+          /* 1. 레트로핏 생성 */
         // 1.1. 서버 생성
-        Retrofit client = new Retrofit.Builder()
+        client = new Retrofit.Builder()
                 .baseUrl(IBbs.SERVER)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
 
         /* 2. 서비스 연결 */
-        IBbs myServer = client.create(IBbs.class);
+        myServer = client.create(IBbs.class);
+    }
+
+    private void loadAll() {
 
         /* 3. 서비스의 특정 함수 호출 -> Observable 생성 */
-        Observable<ResponseBody> observable = myServer.read();
+        Observable<ResponseBody> observable = myServer.readAll();
 
-
-        /* 4. subscribe 등록 */
+          /* 4. subscribe 등록 */
         observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -102,12 +113,14 @@ public class MainActivity extends AppCompatActivity {
                             // 1. 데이터를 꺼내고
                             Gson gson = new Gson();
                     /* converting 하기 위한 타입지정 */
-//                             1.1. type을 만들어서 처리하기
-//                    Type type = new TypeToken<List<Bbs>>() {
-//                    }.getType();
-//                    List<Bbs> data = gson.fromJson(jsonString, type);
-//                             1.2. 객체 배열로 넘겨 받기
-//                             2. 데이터를 아답터에 세팅하고
+                            /**
+                             *  1.1. type을 만들어서 처리하기
+                             * Type type = new TypeToken<List<Bbs>>() {}.getType();
+                             * List<Bbs> data = gson.fromJson(jsonString, type);
+                             * 1.2. 객체 배열로 넘겨 받기
+                             * 2. 데이터를 아답터에 세팅하고
+                             */
+
                             Bbs data[] = gson.fromJson(jsonString, Bbs[].class);
                             Log.e("MainActivity", "data :::: " + data.length);
 
@@ -118,9 +131,40 @@ public class MainActivity extends AppCompatActivity {
 
                             // 3. 아답터 갱신
                             adapter.notifyDataSetChanged();
+                            setExId(bbsList.get(0).getId());
+                            Log.e("Main", "loadAll exid :: " + this.exId);
+
 //                          adapter.notifyItemInserted(bbsList.size()+1);
+                        });
+    }
 
+    private void getLastItem() {
 
+        Observable<ResponseBody> lastItemObservable = myServer.readLastRecord();
+
+        lastItemObservable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        responseBody -> {
+                            String jsonString = responseBody.string();
+                            Log.e("Retrofit", jsonString);
+                            Gson gson = new Gson();
+                            Bbs lastBbs[] = gson.fromJson(jsonString, Bbs[].class);
+                            int lastBbsId = Integer.parseInt(lastBbs[lastBbs.length - 1].getId());
+                            Log.e("lastItemObservable", "lastItemId == " + lastBbsId);
+                            if (lastBbsId > this.exId) {
+                                for (int i = 0; i < lastBbs.length; i++) {
+                                    Log.e("lastItemObservable", "for 문 = " + i);
+                                    bbsList.add(lastBbs[i]);
+                                    adapter.notifyItemInserted(bbsList.size() - 1 + i);
+                                }
+                                setExId(bbsList.get(0).getId());
+                                Log.e("Main", "getLastItem :: " + exId);
+
+                            } else {
+                                Log.e("lastItemObservable", "loadAll");
+                                loadAll();
+                            }
                         });
     }
 }

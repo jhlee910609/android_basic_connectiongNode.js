@@ -15,11 +15,16 @@ import retrofit2.http.PUT;
 
 
 public interface IBbs {
+
     // server 끝에 '/' 꼭 넣어준다.
-    public static final String SERVER = "http://192.168.10.249:1111/";
+    public static final String SERVER = "http://172.30.1.7:1111/";
 
     @GET("bbs")
-    public Observable<ResponseBody> read();
+    public Observable<ResponseBody> readAll();
+
+    @GET("bbs?getLast")
+    public Observable<ResponseBody> readLastRecord();
+
                     // 파라미터로 String or RequestBody를 넘길 수 있다.
     @POST("bbs")
     public Observable<ResponseBody> write(@Body RequestBody bbs);

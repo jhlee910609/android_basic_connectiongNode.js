@@ -60,4 +60,14 @@ public class Bbs {
         this.author = author;
     }
 
+    @Override
+    public String toString() {
+        return "Bbs{" +
+                "id='" + id + '\'' +
+                ", date='" + date + '\'' +
+                ", content='" + content + '\'' +
+                ", author='" + author + '\'' +
+                ", title='" + title + '\'' +
+                '}';
+    }
 }

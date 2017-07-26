@@ -2,7 +2,6 @@ package com.example.junhee.servernodejs;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,15 +18,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
 
     private List<Bbs> bbsList = new ArrayList<>();
     private Context mContext;
-    public String exId = "";
 
     public RecyclerAdapter(List<Bbs> bbsList, Context context){
         this.bbsList = bbsList;
         this.mContext = context;
-    }
-
-    public void setDate(List<Bbs> bbsList){
-        this.bbsList = bbsList;
     }
 
     @Override
@@ -39,8 +33,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Holder
     @Override
     public void onBindViewHolder(Holder holder, int position) {
         Bbs bbs = bbsList.get(position);
-        exId = bbs.getId();
-        Log.e("RecyclerAdapter", "exId :: " + exId);
         holder.setTxtAuthor(bbs.getAuthor());
         holder.setTxtDate(bbs.getDate());
         holder.setTxtTitle(bbs.getTitle());
